@@ -67,14 +67,6 @@ class Optimise():
 
 
 
-
-
-
-
-
-
-
-
 x = Optimise('test-pic.jpg')
 x.resize('auto',1010)
 x.save(False, 10)
