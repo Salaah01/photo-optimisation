@@ -1,6 +1,8 @@
 from __future__ import print_function
 import sys
+import os
 from PIL import Image
+import img_extentions
 
 class Optimise():
     """
@@ -12,9 +14,15 @@ class Optimise():
         self.orig_img = Image.open(photo)
         self.orig_width = self.orig_img.size[0]
         self.orig_height = self.orig_img.size[1]
-        
-    def save(self, optimize=False, quality=100):
-        self.img.save('resized_' + self.photo, optimize=optimize, quality=quality)
+        self.optimize = False
+        self.quality = 100
+
+        def check_if_img(self):
+            if not(os.path.splitext(self.photo)[1] in img_extentions.extentions):
+                raise Exception('The uploaded file is not a supported file type')
+
+    def save(self):
+        self.img.save('resized_' + self.photo, optimize=self.optimize, quality=self.quality)
 
     def resize(self, width='auto', height='auto'):
         """
@@ -64,9 +72,25 @@ class Optimise():
 
         else:
             raise Exception('You must enter at least a width or a height.\nwidth={}\nheight={}', format(width, height))
+    
+    def change_format(self, extention):
+        self.photo = os.path.splitext(self.photo)[0] + extention
+
+    def optimise(self, opt):
+        if opt == True:
+            self.optimise = opt
+
+    def change_quality(self, quality):
+        try:
+            self.quality = int(quality)
+        except:
+            pass
 
 
-
-x = Optimise('test-pic.jpg')
-x.resize('auto',1010)
-x.save(False, 10)
+img = Optimise('test-pic.jpg')
+img.change_format('.bmp')
+img.resize(height=300)
+img.optimise = True
+img.quality = 10
+img.save()
+Image.open('test-pic.jpg')
