@@ -1,19 +1,37 @@
 <HomePage>:
+    ## canvas:
+    ##    Color:
+    ##        rgba: 1, 1, 1, 1
+    ##   Rectangle:
+    ##        pos: self.pos
+    ##        size: self.size
+
     cols: 1
     ## File Upload Section
-    BoxLayout:
+    GridLayout:
+        cols: 2
+        rows: 4
         font_size: 100
+        height: self.minimum_height
+        size_hint_y: None
         TextInput:
             id: txt_filepath
-            text: 'Enter File Path'
-            size: 1200, self.height
+            width: 250
+            size_hint: 0.8, None
+            height: 50
         Button:
             id: btn_browse_file:
+            width: 0.2
             text: "Browse"
-            size: 300, self.height
+            size_hint: 0.2, None
+            height: 50
 
     ## List of Files
-    BoxLayout:
+    GridLayout:
+        cols: 1
+        rows: 1
+        size_hint_y: None
+        height: root.height * 0.4
         ListView:
             id: file_list
 
@@ -24,15 +42,28 @@
         ## Auto Compress
         Label:
             text: 'Auto Compress'
-        ToggleButton:
+        GridLayout:
+            cols: 5
+            ToggleButton:
+                width: 100
+            Label:
+            Label:
+            Label:
+            Label:
         Label:
         Label:
 
         ## Optimise Option
         Label:
             text: 'Optimise'
-        CheckBox:
-            id: opt_optimise
+        GridLayout:
+            cols: 5
+            CheckBox:
+                id: opt_optimise
+            Label:
+            Label:
+            Label:
+            Label:
 
         ## Quality Option
         Label:
@@ -64,7 +95,7 @@
 
         ## Convert
         Label:
-            text: 'Convert'
+            text: 'Change File Type'
         DropDown:
             id: convert_opt
 
