@@ -1,0 +1,73 @@
+<HomePage>:
+    cols: 1
+    ## File Upload Section
+    BoxLayout:
+        font_size: 100
+        TextInput:
+            id: txt_filepath
+            text: 'Enter File Path'
+            size: 1200, self.height
+        Button:
+            id: btn_browse_file:
+            text: "Browse"
+            size: 300, self.height
+
+    ## List of Files
+    BoxLayout:
+        ListView:
+            id: file_list
+
+    ## Compression Options
+    GridLayout:
+        cols: 4
+
+        ## Auto Compress
+        Label:
+            text: 'Auto Compress'
+        ToggleButton:
+        Label:
+        Label:
+
+        ## Optimise Option
+        Label:
+            text: 'Optimise'
+        CheckBox:
+            id: opt_optimise
+
+        ## Quality Option
+        Label:
+            text: 'Quality'
+        BoxLayout:
+            orientation: 'vertical'
+            Label:
+                id: label_quality_value
+                text: str(int(quality_value.value))
+            Slider:
+                id: quality_value
+                value_track: True
+                min: 1
+                max: 100
+                value: 80
+
+        ## Resize Option
+        Label:
+            text: 'Resize'
+        BoxLayout:
+            Label:
+                text: 'W'
+            TextInput:
+                id: resize_w
+            Label:
+                text: 'H'
+            TextInput:
+                id: resize_h
+
+        ## Convert
+        Label:
+            text: 'Convert'
+        DropDown:
+            id: convert_opt
+
+    ## Convert Button
+    Button:
+        text: 'Convert'
