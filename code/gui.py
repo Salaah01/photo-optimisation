@@ -1,4 +1,5 @@
 import tkinter as tk
+from gui_controls import Controls
 
 
 class Application(tk.Frame):
@@ -8,6 +9,46 @@ class Application(tk.Frame):
         self.window = master
         self.window.geometry('750x750')
         self.window.title('Image Optimisation')
+
+    #  GUI CONTROLS
+
+    def get_list_items(self):
+        self.list_items = self.files.get(0,tk.END)
+
+    def ctrl_browse_btn(self):
+        """
+        When the browse button is selected, the user will be able to select multiple files.
+        When the user confirms their selection, the listbox is populate with the filepaths of the selection.
+        """
+        filenames = tk.filedialog.askopenfilenames()
+        for filename in filenames:
+            self.files.insert(0, filename)
+        self.get_list_items()
+
+    def selected_file(self, evt):
+        """
+        If the user selects an item from the list, update the selected item
+        """
+        try:
+            self.selected = self.files.get(self.files.curselection())
+            self.file_path.set(self.selected)
+            self.get_list_items()
+        except IndexError:
+            pass
+        except tk.TclError:
+            pass
+
+    def ctrl_remove_btn(self):
+        """
+        If the user presses remove, then it will remove the selected file form the list"
+        """
+        for f in range(len(self.list_items)):
+            if self.ent_file.get() == self.list_items[f]:
+                self.files.delete(f)
+                self.get_list_items()
+                break
+
+    # GUI LAYOUT
 
     def frame_layouts(self):
         # File Uplaod Section (Top)
@@ -39,9 +80,9 @@ class Application(tk.Frame):
 
     def file_upload(self):
         # Input
-        file_path = tk.StringVar()
-        ent_file = tk.Entry(self.frame_file_upload, textvariable=file_path)
-        ent_file.grid(
+        self.file_path = tk.StringVar()
+        self.ent_file = tk.Entry(self.frame_file_upload, textvariable=self.file_path)
+        self.ent_file.grid(
             row=0,
             column=0,
             padx=(0, 5),
@@ -52,24 +93,43 @@ class Application(tk.Frame):
         browse_btn = tk.Button(
             self.frame_file_upload,
             text='Browse',
-            width=12
+            width=12,
+            command=self.ctrl_browse_btn
             )
         browse_btn.grid(row=0, column=1)
 
+        # Add Button
+        add_btn = tk.Button(
+            self.frame_file_upload,
+            text='Add',
+            width=12
+        )
+        add_btn.grid(row=0, column=2)
+
+        # Remove Button
+        remove_btn = tk.Button(
+            self.frame_file_upload,
+            text='Remove',
+            width=12,
+            command=self.ctrl_remove_btn
+        )
+        remove_btn.grid(row=0, column=3)
+
     def file_list(self):
-        files = tk.Listbox(self.frame_file_list, height=6, width=35)
-        files.grid(
+        self.files = tk.Listbox(self.frame_file_list, height=6, width=35)
+        self.files.grid(
             row=0,
             column=0,
             sticky='w, e, n, s'
             )
+        self.files.bind('<<ListboxSelect>>', self.selected_file)
 
     def optimise_opts(self):
         # Auto Optimise
         opt_auto = tk.Checkbutton(
-                        self.frame_optimise_opts,
-                        text="Auto Optimise"
-                        )
+            self.frame_optimise_opts,
+            text="Auto Optimise"
+            )
         opt_auto.grid(
             row=0,
             column=0,
@@ -127,10 +187,10 @@ class Application(tk.Frame):
             pady=(0, 10)
             )
         opt_resize_h = tk.Entry(
-                            self.frame_optimise_opts,
-                            width=5,
-                            textvariable=val_resize_h
-                            )
+            self.frame_optimise_opts,
+            width=5,
+            textvariable=val_resize_h
+            )
         opt_resize_h.grid(
             row=3,
             column=3,
@@ -149,10 +209,10 @@ class Application(tk.Frame):
             columnspan=1
             )
         opt_convert = tk.OptionMenu(
-                                self.frame_optimise_opts,
-                                val_convert,
-                                *convert_opts
-                                )
+            self.frame_optimise_opts,
+            val_convert,
+            *convert_opts
+            )
         opt_convert.grid(
             row=4,
             column=1,

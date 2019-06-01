@@ -7,7 +7,7 @@ import img_extentions
 
 class Optimise():
     """
-    Will take a photo and optimise the photo in accordance to what the user's needs are.
+    Will load a photo and optimise in accordance to the user input.
     """
 
     def __init__(self, photo):
