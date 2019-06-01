@@ -1,5 +1,5 @@
 import tkinter as tk
-from gui_controls import Controls
+import os
 
 
 class Application(tk.Frame):
@@ -37,6 +37,15 @@ class Application(tk.Frame):
             pass
         except tk.TclError:
             pass
+
+    def ctrl_add_btn(self):
+        """
+        If the user presses add, then add filepath in the textbox into the list if it exists
+        """
+        if os.path.isfile(self.ent_file.get()):
+            self.files.insert(0, self.ent_file.get())
+        else:
+            self.file_path.set('FILE DOES NOT EXIST')
 
     def ctrl_remove_btn(self):
         """
