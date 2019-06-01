@@ -1,5 +1,8 @@
 import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog
 import os
+# from gui_controls import Controls
 
 
 class Application(tk.Frame):
@@ -13,6 +16,9 @@ class Application(tk.Frame):
     #  GUI CONTROLS
 
     def get_list_items(self):
+        """
+        Retrive all items from the list
+        """
         self.list_items = self.files.get(0,tk.END)
 
     def ctrl_browse_btn(self):
@@ -22,7 +28,8 @@ class Application(tk.Frame):
         """
         filenames = tk.filedialog.askopenfilenames()
         for filename in filenames:
-            self.files.insert(0, filename)
+            if not(filename in self.list_items):
+                self.files.insert(0, filename)
         self.get_list_items()
 
     def selected_file(self, evt):
@@ -42,10 +49,16 @@ class Application(tk.Frame):
         """
         If the user presses add, then add filepath in the textbox into the list if it exists
         """
-        if os.path.isfile(self.ent_file.get()):
-            self.files.insert(0, self.ent_file.get())
-        else:
-            self.file_path.set('FILE DOES NOT EXIST')
+        file_to_add = self.ent_file.get()
+        self.get_list_items()
+
+        if not(file_to_add in self.list_items):
+            if os.path.isfile(self.ent_file.get()):
+                self.files.insert(0, self.ent_file.get())
+            else:
+                self.file_path.set('FILE DOES NOT EXIST')
+
+        self.get_list_items()
 
     def ctrl_remove_btn(self):
         """
@@ -54,8 +67,9 @@ class Application(tk.Frame):
         for f in range(len(self.list_items)):
             if self.ent_file.get() == self.list_items[f]:
                 self.files.delete(f)
-                self.get_list_items()
                 break
+
+        self.get_list_items()
 
     # GUI LAYOUT
 
@@ -111,6 +125,7 @@ class Application(tk.Frame):
         add_btn = tk.Button(
             self.frame_file_upload,
             text='Add',
+            command=self.ctrl_add_btn,
             width=12
         )
         add_btn.grid(row=0, column=2)
@@ -132,6 +147,8 @@ class Application(tk.Frame):
             sticky='w, e, n, s'
             )
         self.files.bind('<<ListboxSelect>>', self.selected_file)
+        
+        self.get_list_items()   # Run method to popluate list items
 
     def optimise_opts(self):
         # Auto Optimise
@@ -162,6 +179,7 @@ class Application(tk.Frame):
             orient='horizontal',
             variable=val_quality,
             )
+        opt_quality.set(80)
         opt_quality.grid(
             row=1,
             column=1,
