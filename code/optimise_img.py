@@ -4,6 +4,7 @@ import os
 from PIL import Image
 import img_extentions
 
+
 class Optimise():
     """
     Will take a photo and optimise the photo in accordance to what the user's needs are.
