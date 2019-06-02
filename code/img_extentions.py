@@ -1,17 +1,17 @@
 formats = {
-    'bmp': {
+    'BMP': {
         'extension': '.bmp'
     },
-    'jpeg': {
-        'extension': '.jgp'
+    'JPEG': {
+        'extension': '.jpg'
     },
-    'png': {
+    'PNG': {
         'extension': '.png'
     },
-    'gif': {
+    'GIF': {
         'extension': '.gif'
     },
-    'ico': {
+    'ICO': {
         'extension': '.ico'
     }
 }

@@ -1,4 +1,3 @@
-from __future__ import print_function
 import sys
 import os
 from PIL import Image
@@ -13,6 +12,7 @@ class Optimise():
     def __init__(self, photo):
         self.photo = photo
         self.orig_img = Image.open(photo)
+        self.img = self.orig_img
         self.orig_width = self.orig_img.size[0]
         self.orig_height = self.orig_img.size[1]
         self.optimize = False
@@ -22,8 +22,26 @@ class Optimise():
             if not(os.path.splitext(self.photo)[1] in img_extentions.extentions):
                 raise Exception('The uploaded file is not a supported file type')
 
-    def save(self):
-        self.img.save('resized_' + self.photo, optimize=self.optimize, quality=self.quality)
+    def save(self, save_dir):
+
+        base_filename = os.path.basename(self.photo)
+        save_path = os.path.join(save_dir, 'resized_' + base_filename)
+
+        if os.path.isfile(save_path):
+            save_path_exists = True
+            path_pre = os.path.splitext(save_path)[0]
+            path_extention = os.path.splitext(save_path)[1]
+
+            counter = 0
+            while save_path_exists:
+                
+                counter += 1
+                save_path = f"{path_pre} ({counter}){path_extention}"
+                
+                if not(os.path.isfile(save_path)):
+                    save_path_exists = False                
+
+        self.img.save(save_path, optimize=self.optimize, quality=self.quality)
 
     def resize(self, width='auto', height='auto'):
         """
@@ -49,11 +67,11 @@ class Optimise():
             height_input = False
 
         if width_input and height_input:
-            self.img = self.orig_img.resize((width, height), Image.ANTIALIAS)
+            self.img = self.img.resize((width, height), Image.ANTIALIAS)
         
         elif height_input:
             ratio = height / self.orig_height
-            self.img = self.orig_img.resize(
+            self.img = self.img.resize(
                 (
                     int(self.orig_width * ratio),
                     height
@@ -63,10 +81,10 @@ class Optimise():
 
         elif width_input:
             ratio = width / self.orig_width
-            self.img = self.orig_img.resize(
+            self.img = self.img.resize(
                 (
                     width,
-                    int(self.orig_height * ratio)
+                    int(self.img * ratio)
                 ),
                 Image.ANTIALIAS
             )
@@ -87,11 +105,37 @@ class Optimise():
         except:
             pass
 
+def run_optimisation(img_file, save_dir, **kwargs):
+    img = Optimise(img_file)
 
-img = Optimise('test-pic.jpg')
-img.change_format('.bmp')
-img.resize(height=300)
-img.optimise = True
-img.quality = 10
-img.save()
-Image.open('test-pic.jpg')
+    # Auto
+    if 'auto' in kwargs:
+        auto = int(kwargs['auto'])
+
+        if auto:
+            img.quality = 80
+    
+    else:
+
+        # Change Format
+        if 'new_format' in kwargs:
+            new_format = kwargs['new_format']
+            if new_format in img_extentions.keys:
+                img.change_format(img_extentions.formats[new_format]['extension'])
+        
+        # Change Size
+        if 'resize' in kwargs:
+            new_size = kwargs['resize']
+            if len(new_size) == 2 and isinstance(new_size[0], int) and isinstance(new_size[1], int):
+                img.resize(width=new_size[0], height=new_size[1])
+        
+        # Quality
+        if 'quality' in kwargs:
+            quality = int(kwargs['quality'])
+            if quality < 100:
+                img.quality = quality
+    
+    return img.save(save_dir)
+
+# img_file = 'testimg.jpg'
+# run_optimisation(img_file=img_file, save_dir="C:\\Users\\Salaah\\Documents\\Portfolio\\Image Optimisation\\image-optimisation\\code", new_format="JPEG", quality=80)
