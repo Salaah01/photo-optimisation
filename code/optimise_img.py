@@ -130,7 +130,6 @@ def run_optimisation(img_file, save_dir, **kwargs):
         # Change Size
         if 'resize' in kwargs:
             new_size = kwargs['resize']
-            print(new_size)
             if len(new_size) == 2 and isinstance(new_size[0], int) and isinstance(new_size[1], int):
                 img.resize(width=new_size[0], height=new_size[1])
         
@@ -141,8 +140,3 @@ def run_optimisation(img_file, save_dir, **kwargs):
                 img.quality = quality
     
     return img.save(save_dir)
-
-if __name__ = "__main__":
-    print(2)
-# img_file = 'testimg.jpg'
-# run_optimisation(img_file=img_file, save_dir="C:\\Users\\Salaah\\Documents\\Portfolio\\Image Optimisation\\image-optimisation\\code", new_format="JPEG", quality=80)

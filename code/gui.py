@@ -33,8 +33,8 @@ class Application(tk.Frame):
         filenames = tk.filedialog.askopenfilenames()
         for filename in filenames:
             if not(filename in self.list_items):
-                print(os.path.splitext(filename)[1].lower() in img_extentions.extentions)
-                self.files.insert(0, filename)
+                if os.path.splitext(filename)[1].lower() in img_extentions.extentions:
+                    self.files.insert(0, filename)
         self.get_list_items()
 
     def selected_file(self, evt):
@@ -166,7 +166,6 @@ class Application(tk.Frame):
                     
                     # If the user choooses to keep the default file format
                     if self.val_convert.get() == "(default)":
-                        print(resize_w, resize_h)
                         # Optimise Images
                         for f in range(list_size):
                             optimise_img.run_optimisation(
@@ -175,7 +174,6 @@ class Application(tk.Frame):
                                 quality=self.opt_quality.get(),
                                 resize=(resize_w, resize_h)
                             )
-                            print(resize_w, resize_h)
 
                             # Update Progress
                             progress_bar['value'] = f/list_size * 100
@@ -189,11 +187,9 @@ class Application(tk.Frame):
                                 img_file=self.list_items[f],
                                 save_dir=target_dir,
                                 quality=self.opt_quality.get(),
-                                resize=(self.opt_resize_w.get(), self.opt_resize_h.get()),
+                                resize=(resize_w, resize_h),
                                 new_format=self.val_convert.get()
                             )
-
-                            print((self.opt_resize_w.get(), self.opt_resize_h.get()))
 
                             # Update Progress
                             progress_bar['value'] = f/list_size * 100
