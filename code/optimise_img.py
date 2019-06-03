@@ -142,5 +142,7 @@ def run_optimisation(img_file, save_dir, **kwargs):
     
     return img.save(save_dir)
 
+if __name__ = "__main__":
+    print(2)
 # img_file = 'testimg.jpg'
 # run_optimisation(img_file=img_file, save_dir="C:\\Users\\Salaah\\Documents\\Portfolio\\Image Optimisation\\image-optimisation\\code", new_format="JPEG", quality=80)
