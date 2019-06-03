@@ -14,7 +14,7 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.window = master
-        self.window.geometry('750x750')
+        self.window.geometry('750x275')
         self.window.title('Image Optimisation')
 
     #  GUI CONTROLS
@@ -125,25 +125,7 @@ class Application(tk.Frame):
                 progress_bar.grid(row=1, column=0, pady=10, sticky='w, e')
                 
                 # Create sub-directory
-                sub_dir = 'optimised'
-                target_dir = os.path.join(save_loc, sub_dir)
-
-                # Check if this directory exists, if so create a new sub-directroy
-                if os.path.isdir(target_dir):
-                    target_dir_exists = True
-                    counter = 0
-
-                    while target_dir_exists:
-                        counter += 1
-
-                        try_target_dir = f"{target_dir} ({counter})"
-
-                        if not(os.path.isdir(try_target_dir)):
-                            target_dir_exists = False
-                            target_dir = try_target_dir
-                
-                # Create the sub-directory
-                os.mkdir(target_dir)
+                target_dir = os.path.join(save_loc)
 
                 list_size = len(self.list_items)
 
@@ -207,7 +189,7 @@ class Application(tk.Frame):
                 except:
                     pass
 
-    # GUI LAYOUT
+    # FRAME LAYOUTS
 
     def frame_layouts(self):
         # File Uplaod Section (Top)
@@ -220,32 +202,43 @@ class Application(tk.Frame):
             sticky='w, e'
             )
 
+        # Info Section
+        self.frame_info = tk.Frame(self.window)
+        self.frame_info.grid(
+            row=0,
+            column=1,
+            columnspan=2,
+            pady=(5, 10),
+            padx=(5, 0),
+            )
+
         # File List
-        self.frame_file_list = tk.Frame(self.window)
+        self.frame_file_list = tk.Frame(self.window, width=50)
         self.frame_file_list.grid(
             row=1,
             column=0,
             padx=(5, 0),
             pady=(0, 5),
-            sticky='w, e, n, s')
+            sticky='w, e n, s'
+            )
 
         # Optimise Options
         self.frame_optimise_opts = tk.Frame(self.window)
         self.frame_optimise_opts.grid(
             row=1,
             column=1,
-            padx=20
+            padx=20,
             )
 
     def file_upload(self):
         # Input
         self.file_path = tk.StringVar()
-        self.ent_file = tk.Entry(self.frame_file_upload, textvariable=self.file_path)
+        self.ent_file = tk.Entry(self.frame_file_upload, width=1000, textvariable=self.file_path)
         self.ent_file.grid(
             row=0,
             column=0,
             padx=(0, 5),
-            sticky='w, e'
+            sticky='w'
             )
 
         # Browse Button
@@ -255,7 +248,11 @@ class Application(tk.Frame):
             width=12,
             command=self.ctrl_browse_btn
             )
-        browse_btn.grid(row=0, column=1)
+        browse_btn.grid(
+            row=0,
+            column=1,
+            padx=(10, 0)
+            )
 
         # Add Button
         add_btn = tk.Button(
@@ -264,7 +261,11 @@ class Application(tk.Frame):
             command=self.ctrl_add_btn,
             width=12
         )
-        add_btn.grid(row=0, column=2)
+        add_btn.grid(
+            row=0,
+            column=2,
+            padx=(10, 0)
+            )
 
         # Remove Button
         remove_btn = tk.Button(
@@ -273,10 +274,29 @@ class Application(tk.Frame):
             width=12,
             command=self.ctrl_remove_btn
         )
-        remove_btn.grid(row=0, column=3)
+        remove_btn.grid(
+            row=0,
+            column=3,
+            padx=(10, 15)
+            )
+
+    def info(self):
+        info_label = tk.Label(
+            self.frame_info,
+            text="testing",
+            font=("Arial", 15)
+        )
+        info_label.grid(
+            row=0,
+            column=0,
+            sticky='e',
+            padx=30
+            )
+
+    #  WIDGETS
 
     def file_list(self):
-        self.files = tk.Listbox(self.frame_file_list, height=6, width=35)
+        self.files = tk.Listbox(self.frame_file_list, height=6, width=25)
         self.files.grid(
             row=0,
             column=0,
@@ -299,6 +319,7 @@ class Application(tk.Frame):
         self.files.config(xscrollcommand=scrollbar_x.set)
 
     def optimise_opts(self):
+
         # Auto Optimise
         self.val_auto = tk.IntVar()
         self.opt_auto = tk.Checkbutton(
@@ -319,30 +340,31 @@ class Application(tk.Frame):
         lbl_quality.grid(
             row=1,
             column=0,
+            columnspan=4,
             pady=(0, 0)
             )
 
         self.val_quality = tk.IntVar()
         self.opt_quality = tk.Scale(
             self.frame_optimise_opts,
-            from_=0,
+            from_=1,
             to=100,
             orient='horizontal',
             variable=self.val_quality,
             )
         self.opt_quality.set(80)
         self.opt_quality.grid(
-            row=1,
-            column=1,
+            row=2,
+            column=0,
             pady=(0, 15),
-            columnspan=3
+            columnspan=4
             )
 
         # Resize
         self.val_resize_w = tk.StringVar()
         lbl_resize_w = tk.Label(self.frame_optimise_opts, text='W')
         lbl_resize_w.grid(
-            row=3,
+            row=4,
             column=0,
             pady=(0, 10)
             )
@@ -352,7 +374,7 @@ class Application(tk.Frame):
             textvariable=self.val_resize_w
             )
         self.opt_resize_w.grid(
-            row=3,
+            row=4,
             column=1,
             pady=(0, 10)
             )
@@ -360,7 +382,7 @@ class Application(tk.Frame):
         self.val_resize_h = tk.StringVar()
         lbl_resize_h = tk.Label(self.frame_optimise_opts, text='H')
         lbl_resize_h.grid(
-            row=3,
+            row=4,
             column=2,
             pady=(0, 10)
             )
@@ -370,7 +392,7 @@ class Application(tk.Frame):
             textvariable=self.val_resize_h
             )
         self.opt_resize_h.grid(
-            row=3,
+            row=4,
             column=3,
             pady=(0, 10)
             )
@@ -381,7 +403,7 @@ class Application(tk.Frame):
         self.val_convert.set(convert_opts[0])
         lbl_convert = tk.Label(self.frame_optimise_opts, text="Format")
         lbl_convert.grid(
-            row=4,
+            row=5,
             column=0,
             pady=(0, 10),
             columnspan=1
@@ -392,7 +414,7 @@ class Application(tk.Frame):
             *convert_opts
             )
         self.opt_convert.grid(
-            row=4,
+            row=5,
             column=1,
             pady=(0, 10),
             columnspan=3,
@@ -403,9 +425,13 @@ class Application(tk.Frame):
         self.btn_optimise = tk.Button(
             self.frame_optimise_opts,
             command=self.ctrl_btn_optimise,
-            text='Optimse'
+            text='Run'
         )
-        self.btn_optimise.grid(row=5, column=0, columnspan=4)
+        self.btn_optimise.grid(
+            row=5,
+            column=0,
+            columnspan=4
+            )
 
     def build(self):
 
@@ -414,6 +440,7 @@ class Application(tk.Frame):
 
         # Call Sections
         self.file_upload()
+        self.info()
         self.file_list()
         self.optimise_opts()
 
@@ -422,6 +449,8 @@ class Application(tk.Frame):
         self.window.rowconfigure(1, weight=1)
         self.frame_file_upload.rowconfigure(0, weight=1)
         self.frame_file_upload.columnconfigure(0, weight=1)
+        self.frame_info.rowconfigure(0, weight=1)
+        self.frame_info.columnconfigure(0, weight=1)
         self.frame_file_list.rowconfigure(0, weight=1)
         self.frame_file_list.columnconfigure(0, weight=1)
         self.frame_optimise_opts.rowconfigure(0, weight=1)
