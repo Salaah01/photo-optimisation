@@ -5,6 +5,7 @@ from tkinter import filedialog
 import img_extentions
 import optimise_img
 import os
+import time
 # from gui_controls import Controls
 
 
@@ -32,6 +33,7 @@ class Application(tk.Frame):
         filenames = tk.filedialog.askopenfilenames()
         for filename in filenames:
             if not(filename in self.list_items):
+                print(os.path.splitext(filename)[1].lower() in img_extentions.extentions)
                 self.files.insert(0, filename)
         self.get_list_items()
 
@@ -95,60 +97,120 @@ class Application(tk.Frame):
     def ctrl_btn_optimise(self):
         save_loc = tk.filedialog.askdirectory()
         
-        if save_loc:
+        # Run only if there are any list items
+        if self.list_items: 
             
-            # Create sub-directory
-            sub_dir = 'optimised'
-            target_dir = os.path.join(save_loc, sub_dir)
-
-            # Check if this directory exists, if so create a new sub-directroy
-            if os.path.isdir(target_dir):
-                target_dir_exists = True
-                counter = 0
-
-                while target_dir_exists:
-                    counter += 1
-
-                    try_target_dir = f"{target_dir} ({counter})"
-
-                    if not(os.path.isdir(try_target_dir)):
-                        target_dir_exists = False
-                        target_dir = try_target_dir
-            
-            # Create the sub-directory
-            os.mkdir(target_dir)
-
-            if self.val_auto.get():
-
-                for file in self.list_items:
-                    optimise_img.run_optimisation(
-                        img_file=file,
-                        save_dir=target_dir,
-                        quality=80
-                    )
-            
+            # Change the format of resize to work with the program
+            if self.opt_resize_h.get() == "":
+                resize_h = 0
             else:
+                try:
+                    resize_h = int(self.opt_resize_h.get())
+                except:
+                    resize_h = 0
+            
+            if self.opt_resize_w.get() == "":
+                resize_w = 0
+            else:
+                try:
+                    resize_w = int(self.opt_resize_w.get())
+                except:
+                    resize_w = 0
+
+            # Run only if the user has selected directory to save the files.
+            if save_loc:
+
+                # Create Progress Bar
+                progress_bar = ttk.Progressbar(self.frame_file_upload, maximum=100)
+                progress_bar.grid(row=1, column=0, pady=10, sticky='w, e')
                 
-                if self.val_convert.get() == "(default)":
-                    for file in self.list_items:
+                # Create sub-directory
+                sub_dir = 'optimised'
+                target_dir = os.path.join(save_loc, sub_dir)
+
+                # Check if this directory exists, if so create a new sub-directroy
+                if os.path.isdir(target_dir):
+                    target_dir_exists = True
+                    counter = 0
+
+                    while target_dir_exists:
+                        counter += 1
+
+                        try_target_dir = f"{target_dir} ({counter})"
+
+                        if not(os.path.isdir(try_target_dir)):
+                            target_dir_exists = False
+                            target_dir = try_target_dir
+                
+                # Create the sub-directory
+                os.mkdir(target_dir)
+
+                list_size = len(self.list_items)
+
+                # If user has chosesn "auto optimise"
+                if self.val_auto.get():
+
+                    # Optimise Images
+                    for f in range(list_size):
                         optimise_img.run_optimisation(
-                            img_file=file,
+                            img_file=self.list_items[f],
                             save_dir=target_dir,
-                            quality=self.opt_quality.get(),
-                            resize=(self.opt_resize_w.get(), self.opt_resize_h.get())
+                            quality=80
                         )
+
+                        # Update Progress
+                        progress_bar['value'] = f/list_size * 100
+                        progress_bar.update()
                 
                 else:
-                    for file in self.list_items:
-                        optimise_img.run_optimisation(
-                            img_file=file,
-                            save_dir=target_dir,
-                            quality=self.opt_quality.get(),
-                            resize=(int(self.opt_resize_w.get()), int(self.opt_resize_h.get())),
-                            new_format=self.val_convert.get()
-                        )
-                print(self.opt_quality.get(), self.opt_resize_w.get(), self.opt_resize_h.get(), self.val_convert.get())
-        
+                    
+                    # If the user choooses to keep the default file format
+                    if self.val_convert.get() == "(default)":
+                        print(resize_w, resize_h)
+                        # Optimise Images
+                        for f in range(list_size):
+                            optimise_img.run_optimisation(
+                                img_file=self.list_items[f],
+                                save_dir=target_dir,
+                                quality=self.opt_quality.get(),
+                                resize=(resize_w, resize_h)
+                            )
+                            print(resize_w, resize_h)
+
+                            # Update Progress
+                            progress_bar['value'] = f/list_size * 100
+                            progress_bar.update()
+                    
+                    else:
+
+                        # Optimise Images
+                        for f in range(list_size):
+                            optimise_img.run_optimisation(
+                                img_file=self.list_items[f],
+                                save_dir=target_dir,
+                                quality=self.opt_quality.get(),
+                                resize=(self.opt_resize_w.get(), self.opt_resize_h.get()),
+                                new_format=self.val_convert.get()
+                            )
+
+                            print((self.opt_resize_w.get(), self.opt_resize_h.get()))
+
+                            # Update Progress
+                            progress_bar['value'] = f/list_size * 100
+                            progress_bar.update()
+                    
+                # Progress Bar 100% and remove
+                progress_bar['value'] = 100
+                progress_bar.update()
+                time.sleep(0.5)
+                progress_bar.grid_forget()
+
+                # os.startfie does not work on all OS.
+                try:
+                    os.startfile(target_dir)
+                except:
+                    pass
+
     # GUI LAYOUT
 
     def frame_layouts(self):
@@ -227,6 +289,18 @@ class Application(tk.Frame):
         self.files.bind('<<ListboxSelect>>', self.selected_file)
         
         self.get_list_items()   # Run method to popluate list items
+
+        scrollbar_y = tk.Scrollbar(self.frame_file_list, orient="vertical")
+        scrollbar_y.config(command=self.files.yview)
+        scrollbar_y.grid(row=0, column=1, sticky='n, s')
+
+        self.files.config(yscrollcommand=scrollbar_y.set)
+
+        scrollbar_x = tk.Scrollbar(self.frame_file_list, orient="horizontal")
+        scrollbar_x.config(command=self.files.xview)
+        scrollbar_x.grid(row=1, column=0, sticky='w, e')
+
+        self.files.config(xscrollcommand=scrollbar_x.set)
 
     def optimise_opts(self):
         # Auto Optimise

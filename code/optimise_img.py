@@ -53,16 +53,20 @@ class Optimise():
         # Check if there is a integer value for width and height
         
         try:
-            int(width)>0
-            width = int(width)
-            width_input = True
+            if int(width)>0:
+                width = int(width)
+                width_input = True
+            else:
+                width_input = False
         except:
              width_input = False 
 
         try:
-            int(height)>0
-            height = int(height)
-            height_input = True
+            if int(height)>0:
+                height = int(height)
+                height_input = True
+            else:
+                height_input = False
         except:
             height_input = False
 
@@ -84,13 +88,13 @@ class Optimise():
             self.img = self.img.resize(
                 (
                     width,
-                    int(self.img * ratio)
+                    int(self.orig_height * ratio)
                 ),
                 Image.ANTIALIAS
             )
 
         else:
-            raise Exception('You must enter at least a width or a height.\nwidth={}\nheight={}', format(width, height))
+            pass
     
     def change_format(self, extention):
         self.photo = os.path.splitext(self.photo)[0] + extention
@@ -126,6 +130,7 @@ def run_optimisation(img_file, save_dir, **kwargs):
         # Change Size
         if 'resize' in kwargs:
             new_size = kwargs['resize']
+            print(new_size)
             if len(new_size) == 2 and isinstance(new_size[0], int) and isinstance(new_size[1], int):
                 img.resize(width=new_size[0], height=new_size[1])
         
