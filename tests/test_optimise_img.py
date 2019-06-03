@@ -1,3 +1,3 @@
-from ..code.optimise_img import Optimise
-
-print(1)
+import setup_paths
+import unittest
+from optimise_img import Optimise
