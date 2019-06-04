@@ -16,6 +16,7 @@ class Application(tk.Frame):
         self.window = master
         self.window.geometry('750x275')
         self.window.title('Image Optimisation')
+        self.invalid_files = []
 
     #  GUI CONTROLS
 
@@ -25,16 +26,46 @@ class Application(tk.Frame):
         """
         self.list_items = self.files.get(0,tk.END)
 
+        # Update invalid files
+        self.invalid_files = []
+        for file in self.list_items:
+            if "<<INVALID FILETYPE>> " in file:
+                self.invalid_files.append(file)
+
+        invalid_files = len(self.invalid_files)
+        # If there are any invalid files, then update the label with the corresponding information
+        if invalid_files == 0:
+            self.info_label.config(text='')
+        elif invalid_files == 1:
+            self.info_label.config(text=f"{invalid_files} invalid file")
+            self.info_label.config(fg='red')
+        else:
+            self.info_label.config(text=f"{invalid_files} invalid files")
+            self.info_label.config(fg='red')
+
     def ctrl_browse_btn(self):
         """
         When the browse button is selected, the user will be able to select multiple files.
         When the user confirms their selection, the listbox is populate with the filepaths of the selection.
         """
         filenames = tk.filedialog.askopenfilenames()
+        self.invalid_files = []
         for filename in filenames:
+
+            # Only add files which are not already in the list
             if not(filename in self.list_items):
+
+                # If the file is valid add it to the list, if the file is not valid then append it to invalid files an add it to the list at the end with the respective information.
                 if os.path.splitext(filename)[1].lower() in img_extentions.extentions:
                     self.files.insert(0, filename)
+                else:
+                    self.invalid_files.append('<<INVALID FILETYPE>> ' + filename)
+                
+        # Append the invalid list items to the list
+
+        for invalid_file in self.invalid_files:
+            self.files.insert(0, invalid_file)
+            self.files.itemconfig(0, {'fg': 'red'})
         self.get_list_items()
 
     def selected_file(self, evt):
@@ -122,10 +153,18 @@ class Application(tk.Frame):
 
                 # Create Progress Bar
                 progress_bar = ttk.Progressbar(self.frame_file_upload, maximum=100)
-                progress_bar.grid(row=1, column=0, pady=10, sticky='w, e')
+                progress_bar.grid(
+                    row=1,
+                    column=0,
+                    pady=10,
+                    sticky='w, e'
+                    )
                 
-                # Create sub-directory
-                target_dir = os.path.join(save_loc)
+                progress_bar_info = tk.Label(self.frame_file_upload, text="", fg='green')
+                progress_bar_info.grid(
+                    row=1,
+                    column=1,
+                )
 
                 list_size = len(self.list_items)
 
@@ -134,15 +173,18 @@ class Application(tk.Frame):
 
                     # Optimise Images
                     for f in range(list_size):
-                        optimise_img.run_optimisation(
-                            img_file=self.list_items[f],
-                            save_dir=target_dir,
-                            quality=80
-                        )
+                        if not("<<INVALID FILETYPE>> " in self.list_items[f]):
+                            optimise_img.run_optimisation(
+                                img_file=self.list_items[f],
+                                save_dir=save_loc,
+                                quality=80
+                            )
 
-                        # Update Progress
-                        progress_bar['value'] = f/list_size * 100
-                        progress_bar.update()
+                            # Update Progress
+                            progress_bar['value'] = f/list_size * 100
+                            progress_bar.update()
+                            progress_bar_info.config(text=f"{f+1} of {list_size} processed")
+                            self.files.itemconfig(f, {'fg': 'green'})
                 
                 else:
                     
@@ -150,16 +192,19 @@ class Application(tk.Frame):
                     if self.val_convert.get() == "(default)":
                         # Optimise Images
                         for f in range(list_size):
-                            optimise_img.run_optimisation(
-                                img_file=self.list_items[f],
-                                save_dir=target_dir,
-                                quality=self.opt_quality.get(),
-                                resize=(resize_w, resize_h)
-                            )
+                            if not("<<INVALID FILETYPE>> " in self.list_items[f]):
+                                optimise_img.run_optimisation(
+                                    img_file=self.list_items[f],
+                                    save_dir=save_loc,
+                                    quality=self.opt_quality.get(),
+                                    resize=(resize_w, resize_h)
+                                )
 
-                            # Update Progress
-                            progress_bar['value'] = f/list_size * 100
-                            progress_bar.update()
+                                # Update Progress
+                                progress_bar['value'] = f/list_size * 100
+                                progress_bar.update()
+                                progress_bar.update()
+                                progress_bar_info.config(text=f"{f} of {list_size} processed")
                     
                     else:
 
@@ -167,7 +212,7 @@ class Application(tk.Frame):
                         for f in range(list_size):
                             optimise_img.run_optimisation(
                                 img_file=self.list_items[f],
-                                save_dir=target_dir,
+                                save_dir=save_loc,
                                 quality=self.opt_quality.get(),
                                 resize=(resize_w, resize_h),
                                 new_format=self.val_convert.get()
@@ -185,7 +230,7 @@ class Application(tk.Frame):
 
                 # os.startfie does not work on all OS.
                 try:
-                    os.startfile(target_dir)
+                    os.startfile(save_loc)
                 except:
                     pass
 
@@ -281,12 +326,12 @@ class Application(tk.Frame):
             )
 
     def info(self):
-        info_label = tk.Label(
+        self.info_label = tk.Label(
             self.frame_info,
             text="testing",
             font=("Arial", 15)
         )
-        info_label.grid(
+        self.info_label.grid(
             row=0,
             column=0,
             sticky='e',
