@@ -103,6 +103,36 @@ class Application(tk.Frame):
             self.opt_resize_h.config(state='normal')
             self.opt_resize_w.config(state='normal')
             self.opt_convert.config(state='normal')
+
+    def ctrl_disable_all_options(self):
+        """
+        Disable all options (for when the optimisation is taking place)
+        """
+        self.ctrl_browse_btn.config(state='disabled')
+        self.ctrl_add_btn.config(state='disabled')
+        self.ctrl_remove_btn.config(state='disabled')
+        self.opt_auto.config(state='disabled')
+        self.opt_quality.config(state='disabled')
+        self.opt_resize_h.config(state='disabled')
+        self.opt_resize_w.config(state='disabled')
+        self.opt_convert.config(state='disabled')
+        self.btn_optimise.config(state='disabled')
+
+    def ctrl_enable_all_options(self):
+        """
+        Enable all options (for when the optimisation has finished).
+        ollowing this, run self.ctrl_optimise_opts_auto to disable the respective files when the Auto Optimise button is selected.
+        """
+        self.ctrl_browse_btn.config(state='normal')
+        self.ctrl_add_btn.config(state='normal')
+        self.ctrl_remove_btn.config(state='normal')
+        self.opt_auto.config(state='normal')
+        self.opt_quality.config(state='normal')
+        self.opt_resize_h.config(state='normal')
+        self.opt_resize_w.config(state='normal')
+        self.opt_convert.config(state='normal')
+        self.btn_optimise.config(state='normal')
+        self.ctrl_optimise_opts_opt_auto()
     
     def ctrl_btn_optimise(self):
         if self.list_items:
