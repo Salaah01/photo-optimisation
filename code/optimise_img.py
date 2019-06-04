@@ -124,14 +124,16 @@ def run_optimisation(img_file, save_dir, **kwargs):
         # Change Format
         if 'new_format' in kwargs:
             new_format = kwargs['new_format']
-            if new_format in img_extentions.keys:
-                img.change_format(img_extentions.formats[new_format]['extension'])
+            if not(new_format == None):
+                if new_format in img_extentions.keys:
+                    img.change_format(img_extentions.formats[new_format]['extension'])
         
         # Change Size
         if 'resize' in kwargs:
             new_size = kwargs['resize']
-            if len(new_size) == 2 and isinstance(new_size[0], int) and isinstance(new_size[1], int):
-                img.resize(width=new_size[0], height=new_size[1])
+            if not(new_size == (0, 0)):
+                if len(new_size) == 2 and isinstance(new_size[0], int) and isinstance(new_size[1], int):
+                    img.resize(width=new_size[0], height=new_size[1])
         
         # Quality
         if 'quality' in kwargs:
