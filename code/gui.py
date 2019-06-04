@@ -108,9 +108,10 @@ class Application(tk.Frame):
         """
         Disable all options (for when the optimisation is taking place)
         """
-        self.ctrl_browse_btn.config(state='disabled')
-        self.ctrl_add_btn.config(state='disabled')
-        self.ctrl_remove_btn.config(state='disabled')
+        self.ent_file.config(state='disabled')
+        self.browse_btn.config(state='disabled')
+        self.add_btn.config(state='disabled')
+        self.remove_btn.config(state='disabled')
         self.opt_auto.config(state='disabled')
         self.opt_quality.config(state='disabled')
         self.opt_resize_h.config(state='disabled')
@@ -123,9 +124,10 @@ class Application(tk.Frame):
         Enable all options (for when the optimisation has finished).
         ollowing this, run self.ctrl_optimise_opts_auto to disable the respective files when the Auto Optimise button is selected.
         """
-        self.ctrl_browse_btn.config(state='normal')
-        self.ctrl_add_btn.config(state='normal')
-        self.ctrl_remove_btn.config(state='normal')
+        self.ent_file.config(state='normal')
+        self.browse_btn.config(state='normal')
+        self.add_btn.config(state='normal')
+        self.remove_btn.config(state='normal')
         self.opt_auto.config(state='normal')
         self.opt_quality.config(state='normal')
         self.opt_resize_h.config(state='normal')
@@ -139,6 +141,8 @@ class Application(tk.Frame):
             save_loc = tk.filedialog.askdirectory(title='Select Folder to Save Pictures')
             
             if save_loc:
+
+                self.ctrl_disable_all_options()
 
                 def optimisation_method(img_file, save_dir, **kwargs):
                     """
@@ -240,6 +244,8 @@ class Application(tk.Frame):
                 time.sleep(0.5)
                 progress_bar.grid_forget()
 
+                self.ctrl_enable_all_options()
+
                 # os.startfie does not work on all OS.
                 try:
                     os.startfile(save_loc)
@@ -300,39 +306,39 @@ class Application(tk.Frame):
             )
 
         # Browse Button
-        browse_btn = tk.Button(
+        self.browse_btn = tk.Button(
             self.frame_file_upload,
             text='Browse',
             width=12,
             command=self.ctrl_browse_btn
             )
-        browse_btn.grid(
+        self.browse_btn.grid(
             row=0,
             column=1,
             padx=(10, 0)
             )
 
         # Add Button
-        add_btn = tk.Button(
+        self.add_btn = tk.Button(
             self.frame_file_upload,
             text='Add',
             command=self.ctrl_add_btn,
             width=12
         )
-        add_btn.grid(
+        self.add_btn.grid(
             row=0,
             column=2,
             padx=(10, 0)
             )
 
         # Remove Button
-        remove_btn = tk.Button(
+        self.remove_btn = tk.Button(
             self.frame_file_upload,
             text='Remove',
             width=12,
             command=self.ctrl_remove_btn
         )
-        remove_btn.grid(
+        self.remove_btn.grid(
             row=0,
             column=3,
             padx=(10, 15)
