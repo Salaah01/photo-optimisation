@@ -230,13 +230,13 @@ class Application(tk.Frame):
 
                         if not("<<INVALID FILETYPE>> ") in file:
                             processed += 1
-                            if not(optimisation_method(img_file = file, save_dir = save_loc, quality = 80) == False):
+                            if not(optimisation_method(img_file = file, save_dir = save_loc, quality = 80, new_format = self.val_convert.get()) == False):
                                 success = True
                             else:
                                 success = False
                                 skipped += 1
 
-                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped, new_format = self.val_convert.get())
+                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped)
                   
                 else:
                     processed = 0
