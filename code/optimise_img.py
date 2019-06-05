@@ -1,7 +1,7 @@
 import sys
 import os
 from PIL import Image
-import img_extentions
+import img_extensions
 
 
 class Optimise():
@@ -19,7 +19,7 @@ class Optimise():
         self.quality = 100
 
         def check_if_img(self):
-            if not(os.path.splitext(self.photo)[1] in img_extentions.extentions):
+            if not(os.path.splitext(self.photo)[1] in img_extensions.extensions):
                 raise Exception('The uploaded file is not a supported file type')
 
     def save(self, save_dir):
@@ -110,35 +110,39 @@ class Optimise():
             pass
 
 def run_optimisation(img_file, save_dir, **kwargs):
-    img = Optimise(img_file)
-
-    # Auto
-    if 'auto' in kwargs:
-        auto = int(kwargs['auto'])
-
-        if auto:
-            img.quality = 80
     
-    else:
+    try:
+        img = Optimise(img_file)
 
-        # Change Format
-        if 'new_format' in kwargs:
-            new_format = kwargs['new_format']
-            if not(new_format == None):
-                if new_format in img_extentions.keys:
-                    img.change_format(img_extentions.formats[new_format]['extension'])
+        # Auto
+        if 'auto' in kwargs:
+            auto = int(kwargs['auto'])
+
+            if auto:
+                img.quality = 80
         
-        # Change Size
-        if 'resize' in kwargs:
-            new_size = kwargs['resize']
-            if not(new_size == (0, 0)):
-                if len(new_size) == 2 and isinstance(new_size[0], int) and isinstance(new_size[1], int):
-                    img.resize(width=new_size[0], height=new_size[1])
+        else:
+
+            # Change Format
+            if 'new_format' in kwargs:
+                new_format = kwargs['new_format']
+                if not(new_format == None):
+                    if new_format in img_extensions.keys:
+                        img.change_format(img_extensions.formats[new_format]['extension'])
+            
+            # Change Size
+            if 'resize' in kwargs:
+                new_size = kwargs['resize']
+                if not(new_size == (0, 0)):
+                    if len(new_size) == 2 and isinstance(new_size[0], int) and isinstance(new_size[1], int):
+                        img.resize(width=new_size[0], height=new_size[1])
+            
+            # Quality
+            if 'quality' in kwargs:
+                quality = int(kwargs['quality'])
+                if quality < 100:
+                    img.quality = quality
         
-        # Quality
-        if 'quality' in kwargs:
-            quality = int(kwargs['quality'])
-            if quality < 100:
-                img.quality = quality
-    
-    return img.save(save_dir)
+        return img.save(save_dir)
+    except:
+        return False

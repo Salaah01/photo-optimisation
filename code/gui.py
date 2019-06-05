@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-import img_extentions
+import img_extensions
 import optimise_img
 import gui_controls
 
@@ -48,7 +48,14 @@ class Application(tk.Frame):
         When the browse button is selected, the user will be able to select multiple files.
         When the user confirms their selection, the listbox is populate with the filepaths of the selection.
         """
-        filenames = tk.filedialog.askopenfilenames(title="Select Pictures to Import")
+        filenames = tk.filedialog.askopenfilenames(
+            title="Select Pictures to Import",
+            # filetypes=[("All Pictures", img_extensions.extensions_string)]
+            # filetypes=[('All Supported Images','.bmp' '.jpg' '.png' '.gif' '.ico'),('BMP','.bmp'),('JPEG','.jpg'),('PNG','.png'),('GIF','.gif'),('ICO','.ico')]
+            filetypes=[('All Supported Images','.bmp'), ('All Supported Images', '.jpg'), ('All Supported Images', '.png'),('BMP','.bmp'),('JPEG','.jpg'),('PNG','.png'),('GIF','.gif'),('ICO','.ico')]
+            # filetypes=img_extensions.all_formats
+            # filetypes=[('All Supporetd Formats', '.bmp .jpg .png .gif .ico '), ('BMP', '.bmp'), ('JPEG', '.jpg'), ('PNG', '.png'), ('GIF', '.gif'), ('ICO', '.ico')]
+            )
         gui_controls.insert_files(filenames, self.files, self.list_items)
         self.get_list_items()
 
@@ -172,21 +179,27 @@ class Application(tk.Frame):
                         new_format = None
 
                     # RUN THE OPTIMISATION
+                    
+                    if optimise_img.run_optimisation(img_file = img_file, save_dir = save_dir, quality = quality, resize = resize, new_format = new_format) == False:
+                        print('f')
+                        return False
+                    else:
+                        print('t')
+                        return True
 
-                    optimise_img.run_optimisation(
-                        img_file = img_file,
-                        save_dir = save_dir,
-                        quality = quality,
-                        resize = resize,
-                        new_format = new_format
-                    )
-
-                def update_progress_bar(progress_bar, label_elem, processed, current_val):
+                def update_progress(progress_bar, label_elem, processed, current_val, skipped, success):
                     total_size = len(self.list_items)
                     progress_bar['value'] = current_val/total_size * 100
                     progress_bar.update()
-                    label_elem.config(text=f"{processed} of {total_size} files processed.")
-                    self.files.itemconfig(current_val, {'fg': 'green'})
+                    label_elem.config(text=f"{processed} of {total_size} files processed. {skipped} files skipped.")
+                    if success:
+                        self.files.itemconfig(current_val, {'fg': '#16a085'})
+                    else:
+                        self.files.itemconfig(current_val, {'fg': '#e67e22'})
+                        if skipped == 1:
+                            self.info_label.config(text="1 file skipped", fg="#e67e22")
+                        elif skipped > 1:
+                            self.info_label.config(text=f"{skipped} files skipped", fg="#e67e22")
                 
                 # Change the format of resize to work with the program
                 if self.opt_resize_h.get() == "":
@@ -214,7 +227,7 @@ class Application(tk.Frame):
                     sticky='w, e'
                     )
                 
-                progress_bar_info = tk.Label(self.frame_file_upload, text="", fg='green')
+                progress_bar_info = tk.Label(self.frame_file_upload, text="", fg='#16a085')
                 progress_bar_info.grid(
                     row=1,
                     column=1,
@@ -223,20 +236,31 @@ class Application(tk.Frame):
                 # If user has chosesn "auto optimise"
                 if self.val_auto.get():
                     processed = 0
+                    skipped = 0
                     for i, file in enumerate(self.list_items):
 
                         if not("<<INVALID FILETYPE>> ") in file:
                             processed += 1
-                            optimisation_method(img_file = file, save_dir = save_loc, quality = 80)
-                            update_progress_bar(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed)
+                            if not(optimisation_method(img_file = file, save_dir = save_loc, quality = 80) == False):
+                                success = True
+                            else:
+                                success = False
+                                skipped += 1
+
+                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped)
                   
                 else:
                     processed = 0
                     for i, file in enumerate(self.list_items):
                         if not("<<INVALID FILETYPE>> ") in file:
                             processed += 1
-                            optimisation_method(img_file = file, save_dir = save_loc, quality = self.opt_quality.get(), resize=(resize_w, resize_h), new_format = self.val_convert.get())
-                            update_progress_bar(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed)
+                            if not(optimisation_method(img_file = file, save_dir = save_loc, quality = self.opt_quality.get(), resize=(resize_w, resize_h), new_format = self.val_convert.get()) == False):
+                                success = True
+                            else:
+                                success = False
+                                skipped += 1
+
+                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped)
                 
                 # Progress Bar 100% and remove
                 progress_bar['value'] = 100
@@ -472,7 +496,7 @@ class Application(tk.Frame):
 
         # Convert
         self.val_convert = tk.StringVar()
-        convert_opts = ['(default)'] + img_extentions.keys
+        convert_opts = ['(default)'] + img_extensions.keys
         self.val_convert.set(convert_opts[0])
         lbl_convert = tk.Label(self.frame_optimise_opts, text="Format")
         lbl_convert.grid(

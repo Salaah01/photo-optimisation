@@ -1,4 +1,4 @@
-import img_extentions
+import img_extensions
 import os
 
 def insert_files(filenames, listbox, listbox_items):
@@ -12,7 +12,7 @@ def insert_files(filenames, listbox, listbox_items):
         if not(filename in listbox_items):
 
             # If the file is valid add it to the list, if the file is not valid then append it to invalid files an add it to the list at the end with the respective information.
-            if os.path.splitext(filename)[1].lower() in img_extentions.extentions:
+            if os.path.splitext(filename)[1].lower() in img_extensions.extensions:
                 listbox.insert(0, filename)
             else:
                 invalid_files.append('<<INVALID FILETYPE>> ' + filename)
@@ -38,7 +38,7 @@ def insert_single_file(filename, listbox, listbox_items, info_label, entry_box_f
         elif os.path.isfile(filename):
 
             # If the file is a valid filetype add it to the list, otherwise add it with an error prefix
-            if os.path.splitext(filename)[1].lower() in img_extentions.extentions:
+            if os.path.splitext(filename)[1].lower() in img_extensions.extensions:
                 listbox.insert(0, filename)
             else:
                 listbox.insert(0, '<<INVALID FILETYPE>> ' + filename)
