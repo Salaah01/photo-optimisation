@@ -48,14 +48,7 @@ class Application(tk.Frame):
         When the browse button is selected, the user will be able to select multiple files.
         When the user confirms their selection, the listbox is populate with the filepaths of the selection.
         """
-        filenames = tk.filedialog.askopenfilenames(
-            title="Select Pictures to Import",
-            # filetypes=[("All Pictures", img_extensions.extensions_string)]
-            # filetypes=[('All Supported Images','.bmp' '.jpg' '.png' '.gif' '.ico'),('BMP','.bmp'),('JPEG','.jpg'),('PNG','.png'),('GIF','.gif'),('ICO','.ico')]
-            filetypes=[('All Supported Images','.bmp'), ('All Supported Images', '.jpg'), ('All Supported Images', '.png'),('BMP','.bmp'),('JPEG','.jpg'),('PNG','.png'),('GIF','.gif'),('ICO','.ico')]
-            # filetypes=img_extensions.all_formats
-            # filetypes=[('All Supporetd Formats', '.bmp .jpg .png .gif .ico '), ('BMP', '.bmp'), ('JPEG', '.jpg'), ('PNG', '.png'), ('GIF', '.gif'), ('ICO', '.ico')]
-            )
+        filenames = tk.filedialog.askopenfilenames(title="Select Pictures to Import", filetypes=img_extensions.all_formats)
         gui_controls.insert_files(filenames, self.files, self.list_items)
         self.get_list_items()
 
@@ -104,12 +97,10 @@ class Application(tk.Frame):
             self.opt_quality.config(state='disabled')
             self.opt_resize_h.config(state='disabled')
             self.opt_resize_w.config(state='disabled')
-            self.opt_convert.config(state='disabled')
         else:
             self.opt_quality.config(state='normal')
             self.opt_resize_h.config(state='normal')
             self.opt_resize_w.config(state='normal')
-            self.opt_convert.config(state='normal')
 
     def ctrl_disable_all_options(self):
         """
@@ -181,10 +172,8 @@ class Application(tk.Frame):
                     # RUN THE OPTIMISATION
                     
                     if optimise_img.run_optimisation(img_file = img_file, save_dir = save_dir, quality = quality, resize = resize, new_format = new_format) == False:
-                        print('f')
                         return False
                     else:
-                        print('t')
                         return True
 
                 def update_progress(progress_bar, label_elem, processed, current_val, skipped, success):
@@ -193,7 +182,7 @@ class Application(tk.Frame):
                     progress_bar.update()
                     label_elem.config(text=f"{processed} of {total_size} files processed. {skipped} files skipped.")
                     if success:
-                        self.files.itemconfig(current_val, {'fg': '#16a085'})
+                        self.files.itemconfig(current_val, {'fg': 'green'})
                     else:
                         self.files.itemconfig(current_val, {'fg': '#e67e22'})
                         if skipped == 1:
@@ -227,7 +216,7 @@ class Application(tk.Frame):
                     sticky='w, e'
                     )
                 
-                progress_bar_info = tk.Label(self.frame_file_upload, text="", fg='#16a085')
+                progress_bar_info = tk.Label(self.frame_file_upload, text="", fg='green')
                 progress_bar_info.grid(
                     row=1,
                     column=1,
@@ -247,10 +236,11 @@ class Application(tk.Frame):
                                 success = False
                                 skipped += 1
 
-                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped)
+                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped, new_format = self.val_convert.get())
                   
                 else:
                     processed = 0
+                    skipped = 0
                     for i, file in enumerate(self.list_items):
                         if not("<<INVALID FILETYPE>> ") in file:
                             processed += 1
