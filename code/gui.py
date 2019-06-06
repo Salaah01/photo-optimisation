@@ -2,20 +2,21 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 
-import img_extentions
+import img_extensions
 import optimise_img
+import gui_controls
+
 import os
 import time
-# from gui_controls import Controls
-
 
 class Application(tk.Frame):
 
     def __init__(self, master=None):
         super().__init__(master)
         self.window = master
-        self.window.geometry('750x750')
+        self.window.geometry('750x300')
         self.window.title('Image Optimisation')
+        self.invalid_files = []
 
     #  GUI CONTROLS
 
@@ -25,16 +26,30 @@ class Application(tk.Frame):
         """
         self.list_items = self.files.get(0,tk.END)
 
+        # Update invalid files
+        self.invalid_files = []
+        for file in self.list_items:
+            if "<<INVALID FILETYPE>> " in file:
+                self.invalid_files.append(file)
+
+        invalid_files = len(self.invalid_files)
+        # If there are any invalid files, then update the label with the corresponding information
+        if invalid_files == 0:
+            self.info_label.config(text='')
+        elif invalid_files == 1:
+            self.info_label.config(text=f"{invalid_files} invalid file")
+            self.info_label.config(fg='red')
+        else:
+            self.info_label.config(text=f"{invalid_files} invalid files")
+            self.info_label.config(fg='red')
+
     def ctrl_browse_btn(self):
         """
         When the browse button is selected, the user will be able to select multiple files.
         When the user confirms their selection, the listbox is populate with the filepaths of the selection.
         """
-        filenames = tk.filedialog.askopenfilenames()
-        for filename in filenames:
-            if not(filename in self.list_items):
-                if os.path.splitext(filename)[1].lower() in img_extentions.extentions:
-                    self.files.insert(0, filename)
+        filenames = tk.filedialog.askopenfilenames(title="Select Pictures to Import", filetypes=img_extensions.all_formats)
+        gui_controls.insert_files(filenames, self.files, self.list_items)
         self.get_list_items()
 
     def selected_file(self, evt):
@@ -56,13 +71,7 @@ class Application(tk.Frame):
         """
         file_to_add = self.ent_file.get()
         self.get_list_items()
-
-        if not(file_to_add in self.list_items):
-            if os.path.isfile(self.ent_file.get()):
-                self.files.insert(0, self.ent_file.get())
-            else:
-                self.file_path.set('FILE DOES NOT EXIST')
-
+        gui_controls.insert_single_file(filename=file_to_add, listbox=self.files, listbox_items=self.list_items, info_label=self.info_label, entry_box_field=self.file_path)
         self.get_list_items()
 
     def ctrl_remove_btn(self):
@@ -72,142 +81,193 @@ class Application(tk.Frame):
         for f in range(len(self.list_items)):
             if self.ent_file.get() == self.list_items[f]:
                 self.files.delete(f)
+                # Mark the file in index-1 as the selected file.
+                if f == 0:
+                    self.files.select_set(0)
+                else:
+                    self.files.select_set(f-1)
+                self.selected = self.files.get(self.files.curselection())
+                self.file_path.set(self.selected)
                 break
 
         self.get_list_items()
-
-    def ctrl_optimise_btn(self):
-        """
-        Get the save directory and run the optimisation for each file in the list using the user's settings
-        """
-        save_dir = tk.filedialog.askopenfilenames()
 
     def ctrl_optimise_opts_opt_auto(self):
         if self.val_auto.get():
             self.opt_quality.config(state='disabled')
             self.opt_resize_h.config(state='disabled')
             self.opt_resize_w.config(state='disabled')
-            self.opt_convert.config(state='disabled')
         else:
             self.opt_quality.config(state='normal')
             self.opt_resize_h.config(state='normal')
             self.opt_resize_w.config(state='normal')
-            self.opt_convert.config(state='normal')
+
+    def ctrl_disable_all_options(self):
+        """
+        Disable all options (for when the optimisation is taking place)
+        """
+        self.ent_file.config(state='disabled')
+        self.browse_btn.config(state='disabled')
+        self.add_btn.config(state='disabled')
+        self.remove_btn.config(state='disabled')
+        self.opt_auto.config(state='disabled')
+        self.opt_quality.config(state='disabled')
+        self.opt_resize_h.config(state='disabled')
+        self.opt_resize_w.config(state='disabled')
+        self.opt_convert.config(state='disabled')
+        self.btn_optimise.config(state='disabled')
+
+    def ctrl_enable_all_options(self):
+        """
+        Enable all options (for when the optimisation has finished).
+        ollowing this, run self.ctrl_optimise_opts_auto to disable the respective files when the Auto Optimise button is selected.
+        """
+        self.ent_file.config(state='normal')
+        self.browse_btn.config(state='normal')
+        self.add_btn.config(state='normal')
+        self.remove_btn.config(state='normal')
+        self.opt_auto.config(state='normal')
+        self.opt_quality.config(state='normal')
+        self.opt_resize_h.config(state='normal')
+        self.opt_resize_w.config(state='normal')
+        self.opt_convert.config(state='normal')
+        self.btn_optimise.config(state='normal')
+        self.ctrl_optimise_opts_opt_auto()
     
     def ctrl_btn_optimise(self):
-        save_loc = tk.filedialog.askdirectory()
-        
-        # Run only if there are any list items
-        if self.list_items: 
+        if self.list_items:
+            save_loc = tk.filedialog.askdirectory(title='Select Folder to Save Pictures')
             
-            # Change the format of resize to work with the program
-            if self.opt_resize_h.get() == "":
-                resize_h = 0
-            else:
-                try:
-                    resize_h = int(self.opt_resize_h.get())
-                except:
-                    resize_h = 0
-            
-            if self.opt_resize_w.get() == "":
-                resize_w = 0
-            else:
-                try:
-                    resize_w = int(self.opt_resize_w.get())
-                except:
-                    resize_w = 0
-
-            # Run only if the user has selected directory to save the files.
             if save_loc:
+
+                self.ctrl_disable_all_options()
+
+                def optimisation_method(img_file, save_dir, **kwargs):
+                    """
+                    Will pass the optimisation methods.
+                    """
+                    # SET THE VALUES
+
+                    # Quality
+                    if 'quality' in kwargs:
+                        quality = int(kwargs['quality'])
+                    else:
+                        quality = 100
+                    
+                    # Resize
+                    if 'resize' in kwargs:
+                        resize_w = kwargs['resize'][0]
+                        resize_h = kwargs['resize'][1]
+                        resize = (resize_w, resize_h)
+                    else:
+                        resize = (0, 0)
+
+                    # Change Format
+                    if 'new_format' in kwargs:
+                        new_format = kwargs['new_format']
+                        if new_format == "(default)": new_format = None
+                    else:
+                        new_format = None
+
+                    # RUN THE OPTIMISATION
+                    
+                    if optimise_img.run_optimisation(img_file = img_file, save_dir = save_dir, quality = quality, resize = resize, new_format = new_format) == False:
+                        return False
+                    else:
+                        return True
+
+                def update_progress(progress_bar, label_elem, processed, current_val, skipped, success):
+                    total_size = len(self.list_items)
+                    progress_bar['value'] = current_val/total_size * 100
+                    progress_bar.update()
+                    label_elem.config(text=f"{processed} of {total_size} files processed. {skipped} files skipped.")
+                    if success:
+                        self.files.itemconfig(current_val, {'fg': 'green'})
+                    else:
+                        self.files.itemconfig(current_val, {'fg': '#e67e22'})
+                        if skipped == 1:
+                            self.info_label.config(text="1 file skipped", fg="#e67e22")
+                        elif skipped > 1:
+                            self.info_label.config(text=f"{skipped} files skipped", fg="#e67e22")
+                
+                # Change the format of resize to work with the program
+                if self.opt_resize_h.get() == "":
+                    resize_h = 0
+                else:
+                    try:
+                        resize_h = int(self.opt_resize_h.get())
+                    except:
+                        resize_h = 0
+                
+                if self.opt_resize_w.get() == "":
+                    resize_w = 0
+                else:
+                    try:
+                        resize_w = int(self.opt_resize_w.get())
+                    except:
+                        resize_w = 0
 
                 # Create Progress Bar
                 progress_bar = ttk.Progressbar(self.frame_file_upload, maximum=100)
-                progress_bar.grid(row=1, column=0, pady=10, sticky='w, e')
+                progress_bar.grid(
+                    row=1,
+                    column=0,
+                    pady=10,
+                    sticky='w, e'
+                    )
                 
-                # Create sub-directory
-                sub_dir = 'optimised'
-                target_dir = os.path.join(save_loc, sub_dir)
-
-                # Check if this directory exists, if so create a new sub-directroy
-                if os.path.isdir(target_dir):
-                    target_dir_exists = True
-                    counter = 0
-
-                    while target_dir_exists:
-                        counter += 1
-
-                        try_target_dir = f"{target_dir} ({counter})"
-
-                        if not(os.path.isdir(try_target_dir)):
-                            target_dir_exists = False
-                            target_dir = try_target_dir
-                
-                # Create the sub-directory
-                os.mkdir(target_dir)
-
-                list_size = len(self.list_items)
+                progress_bar_info = tk.Label(self.frame_file_upload, text="", fg='green')
+                progress_bar_info.grid(
+                    row=1,
+                    column=1,
+                )
 
                 # If user has chosesn "auto optimise"
                 if self.val_auto.get():
+                    processed = 0
+                    skipped = 0
+                    for i, file in enumerate(self.list_items):
 
-                    # Optimise Images
-                    for f in range(list_size):
-                        optimise_img.run_optimisation(
-                            img_file=self.list_items[f],
-                            save_dir=target_dir,
-                            quality=80
-                        )
+                        if not("<<INVALID FILETYPE>> ") in file:
+                            processed += 1
+                            if not(optimisation_method(img_file = file, save_dir = save_loc, quality = 80, new_format = self.val_convert.get()) == False):
+                                success = True
+                            else:
+                                success = False
+                                skipped += 1
 
-                        # Update Progress
-                        progress_bar['value'] = f/list_size * 100
-                        progress_bar.update()
-                
+                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped)
+                  
                 else:
-                    
-                    # If the user choooses to keep the default file format
-                    if self.val_convert.get() == "(default)":
-                        # Optimise Images
-                        for f in range(list_size):
-                            optimise_img.run_optimisation(
-                                img_file=self.list_items[f],
-                                save_dir=target_dir,
-                                quality=self.opt_quality.get(),
-                                resize=(resize_w, resize_h)
-                            )
+                    processed = 0
+                    skipped = 0
+                    for i, file in enumerate(self.list_items):
+                        if not("<<INVALID FILETYPE>> ") in file:
+                            processed += 1
+                            if not(optimisation_method(img_file = file, save_dir = save_loc, quality = self.opt_quality.get(), resize=(resize_w, resize_h), new_format = self.val_convert.get()) == False):
+                                success = True
+                            else:
+                                success = False
+                                skipped += 1
 
-                            # Update Progress
-                            progress_bar['value'] = f/list_size * 100
-                            progress_bar.update()
-                    
-                    else:
-
-                        # Optimise Images
-                        for f in range(list_size):
-                            optimise_img.run_optimisation(
-                                img_file=self.list_items[f],
-                                save_dir=target_dir,
-                                quality=self.opt_quality.get(),
-                                resize=(resize_w, resize_h),
-                                new_format=self.val_convert.get()
-                            )
-
-                            # Update Progress
-                            progress_bar['value'] = f/list_size * 100
-                            progress_bar.update()
-                    
+                            update_progress(progress_bar = progress_bar, label_elem = progress_bar_info, current_val = i, processed = processed, success=success, skipped=skipped)
+                
                 # Progress Bar 100% and remove
                 progress_bar['value'] = 100
                 progress_bar.update()
                 time.sleep(0.5)
                 progress_bar.grid_forget()
 
+                self.ctrl_enable_all_options()
+
                 # os.startfie does not work on all OS.
                 try:
-                    os.startfile(target_dir)
+                    os.startfile(save_loc)
                 except:
                     pass
-
-    # GUI LAYOUT
+        else:
+            self.info_label.config(text="Please add files", fg='red')
+    # FRAME LAYOUTS
 
     def frame_layouts(self):
         # File Uplaod Section (Top)
@@ -220,63 +280,101 @@ class Application(tk.Frame):
             sticky='w, e'
             )
 
+        # Info Section
+        self.frame_info = tk.Frame(self.window)
+        self.frame_info.grid(
+            row=0,
+            column=1,
+            columnspan=2,
+            pady=(5, 10),
+            padx=(5, 0),
+            )
+
         # File List
-        self.frame_file_list = tk.Frame(self.window)
+        self.frame_file_list = tk.Frame(self.window, width=50)
         self.frame_file_list.grid(
             row=1,
             column=0,
             padx=(5, 0),
             pady=(0, 5),
-            sticky='w, e, n, s')
+            sticky='w, e n, s'
+            )
 
         # Optimise Options
         self.frame_optimise_opts = tk.Frame(self.window)
         self.frame_optimise_opts.grid(
             row=1,
             column=1,
-            padx=20
+            padx=20,
             )
 
     def file_upload(self):
         # Input
         self.file_path = tk.StringVar()
-        self.ent_file = tk.Entry(self.frame_file_upload, textvariable=self.file_path)
+        self.ent_file = tk.Entry(self.frame_file_upload, width=1000, textvariable=self.file_path)
         self.ent_file.grid(
             row=0,
             column=0,
             padx=(0, 5),
-            sticky='w, e'
+            sticky='w'
             )
 
         # Browse Button
-        browse_btn = tk.Button(
+        self.browse_btn = tk.Button(
             self.frame_file_upload,
             text='Browse',
             width=12,
             command=self.ctrl_browse_btn
             )
-        browse_btn.grid(row=0, column=1)
+        self.browse_btn.grid(
+            row=0,
+            column=1,
+            padx=(10, 0)
+            )
 
         # Add Button
-        add_btn = tk.Button(
+        self.add_btn = tk.Button(
             self.frame_file_upload,
             text='Add',
             command=self.ctrl_add_btn,
             width=12
         )
-        add_btn.grid(row=0, column=2)
+        self.add_btn.grid(
+            row=0,
+            column=2,
+            padx=(10, 0)
+            )
 
         # Remove Button
-        remove_btn = tk.Button(
+        self.remove_btn = tk.Button(
             self.frame_file_upload,
             text='Remove',
             width=12,
             command=self.ctrl_remove_btn
         )
-        remove_btn.grid(row=0, column=3)
+        self.remove_btn.grid(
+            row=0,
+            column=3,
+            padx=(10, 15)
+            )
+
+    def info(self):
+        self.info_label = tk.Label(
+            self.frame_info,
+            text="testing",
+            font=("Arial", 15)
+        )
+        self.info_label.grid(
+            row=0,
+            column=0,
+            sticky='e',
+            padx=30
+            )
+
+    #  WIDGETS
 
     def file_list(self):
-        self.files = tk.Listbox(self.frame_file_list, height=6, width=35)
+        self.files = tk.Listbox(self.frame_file_list, height=6, width=25)
         self.files.grid(
             row=0,
             column=0,
@@ -299,6 +397,7 @@ class Application(tk.Frame):
         self.files.config(xscrollcommand=scrollbar_x.set)
 
     def optimise_opts(self):
+
         # Auto Optimise
         self.val_auto = tk.IntVar()
         self.opt_auto = tk.Checkbutton(
@@ -319,30 +418,38 @@ class Application(tk.Frame):
         lbl_quality.grid(
             row=1,
             column=0,
+            columnspan=4,
             pady=(0, 0)
             )
 
         self.val_quality = tk.IntVar()
         self.opt_quality = tk.Scale(
             self.frame_optimise_opts,
-            from_=0,
+            from_=1,
             to=100,
             orient='horizontal',
             variable=self.val_quality,
             )
-        self.opt_quality.set(80)
+        self.opt_quality.set(100)
         self.opt_quality.grid(
-            row=1,
-            column=1,
+            row=2,
+            column=0,
             pady=(0, 15),
-            columnspan=3
+            columnspan=4
             )
 
         # Resize
+        lbl_resize=tk.Label(self.frame_optimise_opts, text="Resize (px)")
+        lbl_resize.grid(
+            row=4,
+            column=0,
+            columnspan=4,
+        )
+
         self.val_resize_w = tk.StringVar()
         lbl_resize_w = tk.Label(self.frame_optimise_opts, text='W')
         lbl_resize_w.grid(
-            row=3,
+            row=5,
             column=0,
             pady=(0, 10)
             )
@@ -352,7 +459,7 @@ class Application(tk.Frame):
             textvariable=self.val_resize_w
             )
         self.opt_resize_w.grid(
-            row=3,
+            row=5,
             column=1,
             pady=(0, 10)
             )
@@ -360,8 +467,9 @@ class Application(tk.Frame):
         self.val_resize_h = tk.StringVar()
         lbl_resize_h = tk.Label(self.frame_optimise_opts, text='H')
         lbl_resize_h.grid(
-            row=3,
+            row=5,
             column=2,
+            padx=(15, 0),
             pady=(0, 10)
             )
         self.opt_resize_h = tk.Entry(
@@ -370,18 +478,19 @@ class Application(tk.Frame):
             textvariable=self.val_resize_h
             )
         self.opt_resize_h.grid(
-            row=3,
+            row=5,
             column=3,
+            padx=(15, 10),
             pady=(0, 10)
             )
 
         # Convert
         self.val_convert = tk.StringVar()
-        convert_opts = ['(default)'] + img_extentions.keys
+        convert_opts = ['(default)'] + img_extensions.keys
         self.val_convert.set(convert_opts[0])
         lbl_convert = tk.Label(self.frame_optimise_opts, text="Format")
         lbl_convert.grid(
-            row=4,
+            row=6,
             column=0,
             pady=(0, 10),
             columnspan=1
@@ -392,7 +501,7 @@ class Application(tk.Frame):
             *convert_opts
             )
         self.opt_convert.grid(
-            row=4,
+            row=6,
             column=1,
             pady=(0, 10),
             columnspan=3,
@@ -403,9 +512,14 @@ class Application(tk.Frame):
         self.btn_optimise = tk.Button(
             self.frame_optimise_opts,
             command=self.ctrl_btn_optimise,
-            text='Optimse'
+            width=10,
+            text='Run'
         )
-        self.btn_optimise.grid(row=5, column=0, columnspan=4)
+        self.btn_optimise.grid(
+            row=7,
+            column=0,
+            columnspan=4
+            )
 
     def build(self):
 
@@ -414,6 +528,7 @@ class Application(tk.Frame):
 
         # Call Sections
         self.file_upload()
+        self.info()
         self.file_list()
         self.optimise_opts()
 
@@ -422,6 +537,8 @@ class Application(tk.Frame):
         self.window.rowconfigure(1, weight=1)
         self.frame_file_upload.rowconfigure(0, weight=1)
         self.frame_file_upload.columnconfigure(0, weight=1)
+        self.frame_info.rowconfigure(0, weight=1)
+        self.frame_info.columnconfigure(0, weight=1)
         self.frame_file_list.rowconfigure(0, weight=1)
         self.frame_file_list.columnconfigure(0, weight=1)
         self.frame_optimise_opts.rowconfigure(0, weight=1)
