@@ -33,7 +33,7 @@ class Application(tk.Frame):
                 self.invalid_files.append(file)
 
         invalid_files = len(self.invalid_files)
-        # If there are any invalid files, then update the label with the corresponding information
+        # If there are any invalid files, then update the label with the error.
         if invalid_files == 0:
             self.info_label.config(text='')
         elif invalid_files == 1:
@@ -46,7 +46,7 @@ class Application(tk.Frame):
     def ctrl_browse_btn(self):
         """
         When the browse button is selected, the user will be able to select multiple files.
-        When the user confirms their selection, the listbox is populate with the filepaths of the selection.
+        When the user confirms their selection, the listbox with populate with the filepaths in selection.
         """
         filenames = tk.filedialog.askopenfilenames(title="Select Pictures to Import", filetypes=img_extensions.all_formats)
         gui_controls.insert_files(filenames, self.files, self.list_items)
