@@ -15,7 +15,8 @@ class Application(tk.Frame):
         super().__init__(master)
         self.window = master
         self.window.geometry('750x300')
-        self.window.title('Image Optimisation')
+        self.window.title('MiniPics')
+        self.window.iconbitmap('logo.ico')
         self.invalid_files = []
 
     #  GUI CONTROLS
