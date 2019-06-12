@@ -402,7 +402,7 @@ class Application(tk.Frame):
         self.val_auto = tk.IntVar()
         self.opt_auto = tk.Checkbutton(
             self.frame_optimise_opts,
-            text="Auto Optimise",
+            text="AUTO OPTIMISE",
             variable=self.val_auto,
             command=self.ctrl_optimise_opts_opt_auto
             )
@@ -414,7 +414,7 @@ class Application(tk.Frame):
             )
 
         # Quality
-        lbl_quality = tk.Label(self.frame_optimise_opts, text='Quality')
+        lbl_quality = tk.Label(self.frame_optimise_opts, text='QUALITY')
         lbl_quality.grid(
             row=1,
             column=0,
@@ -439,17 +439,33 @@ class Application(tk.Frame):
             )
 
         # Resize
-        lbl_resize=tk.Label(self.frame_optimise_opts, text="Resize (px)")
+        lbl_resize=tk.Label(self.frame_optimise_opts, text="RESIZE (PX)")
         lbl_resize.grid(
             row=4,
             column=0,
             columnspan=4,
         )
 
+        lbl_resize=tk.Label(self.frame_optimise_opts, text="(Leave W or H blank")
+        lbl_resize.grid(
+            row=5,
+            column=0,
+            columnspan=4,
+            pady=(0, 0),
+        )
+
+        lbl_resize=tk.Label(self.frame_optimise_opts, text="to keep aspect ratio)")
+        lbl_resize.grid(
+            row=6,
+            column=0,
+            columnspan=4,
+            pady=(0, 10),
+        )
+
         self.val_resize_w = tk.StringVar()
         lbl_resize_w = tk.Label(self.frame_optimise_opts, text='W')
         lbl_resize_w.grid(
-            row=5,
+            row=7,
             column=0,
             pady=(0, 10)
             )
@@ -459,7 +475,7 @@ class Application(tk.Frame):
             textvariable=self.val_resize_w
             )
         self.opt_resize_w.grid(
-            row=5,
+            row=7,
             column=1,
             pady=(0, 10)
             )
@@ -467,7 +483,7 @@ class Application(tk.Frame):
         self.val_resize_h = tk.StringVar()
         lbl_resize_h = tk.Label(self.frame_optimise_opts, text='H')
         lbl_resize_h.grid(
-            row=5,
+            row=7,
             column=2,
             padx=(15, 0),
             pady=(0, 10)
@@ -478,7 +494,7 @@ class Application(tk.Frame):
             textvariable=self.val_resize_h
             )
         self.opt_resize_h.grid(
-            row=5,
+            row=7,
             column=3,
             padx=(15, 10),
             pady=(0, 10)
@@ -490,7 +506,7 @@ class Application(tk.Frame):
         self.val_convert.set(convert_opts[0])
         lbl_convert = tk.Label(self.frame_optimise_opts, text="Format")
         lbl_convert.grid(
-            row=6,
+            row=8,
             column=0,
             pady=(0, 10),
             columnspan=1
@@ -501,7 +517,7 @@ class Application(tk.Frame):
             *convert_opts
             )
         self.opt_convert.grid(
-            row=6,
+            row=8,
             column=1,
             pady=(0, 10),
             columnspan=3,
@@ -516,7 +532,7 @@ class Application(tk.Frame):
             text='Run'
         )
         self.btn_optimise.grid(
-            row=7,
+            row=9,
             column=0,
             columnspan=4
             )
