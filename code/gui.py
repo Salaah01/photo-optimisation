@@ -1,3 +1,16 @@
+import os
+import sys
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -6,7 +19,7 @@ import img_extensions
 import optimise_img
 import gui_controls
 
-import os
+
 import time
 
 class Application(tk.Frame):
@@ -14,10 +27,18 @@ class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         self.window = master
-        self.window.geometry('750x300')
+        self.window.geometry('790x350')
+        try:
+            self.window.iconbitmap(default=resource_path('logo.ico'))
+        except tk.TclError:
+            cwd = os.path.dirname(os.path.realpath(__file__))
+            logo = os.path.join(os.path.dirname(os.path.realpath(__file__)), "logo.ico")
+            self.window.iconbitmap(default=resource_path('code\\logo.ico'))
+        except:
+            self.window.iconbitmap(".logo.ico")
         self.window.title('MiniPics')
-        self.window.iconbitmap('logo.ico')
         self.invalid_files = []
+        
 
     #  GUI CONTROLS
 
@@ -403,7 +424,7 @@ class Application(tk.Frame):
         self.val_auto = tk.IntVar()
         self.opt_auto = tk.Checkbutton(
             self.frame_optimise_opts,
-            text="AUTO OPTIMISE",
+            text="Auto Optimise",
             variable=self.val_auto,
             command=self.ctrl_optimise_opts_opt_auto
             )
