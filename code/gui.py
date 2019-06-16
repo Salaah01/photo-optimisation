@@ -29,13 +29,23 @@ class Application(tk.Frame):
         self.window = master
         self.window.geometry('790x350')
         try:
-            self.window.iconbitmap(default=resource_path('logo.ico'))
+            try:
+                # Windows
+                self.window.iconbitmap(default=resource_path('logo.ico'))
+            except:
+                # Mac
+                pass
         except tk.TclError:
             cwd = os.path.dirname(os.path.realpath(__file__))
             logo = os.path.join(os.path.dirname(os.path.realpath(__file__)), "logo.ico")
-            self.window.iconbitmap(default=resource_path('code\\logo.ico'))
+            try:
+                # Windows
+                self.window.iconbitmap(default=resource_path('code\\logo.ico'))
+            except:
+                # Mac
+                pass
         except:
-            self.window.iconbitmap(".logo.ico")
+            pass
         self.window.title('MiniPics')
         self.invalid_files = []
         

@@ -3,10 +3,10 @@
 block_cipher = None
 
 
-a = Analysis(['Optimisation\\image-optimisation\\code\\fileinfo.py', 'C:/Users/Salaah/Documents/Portfolio/Image Optimisation/image-optimisation/code/gui.py'],
-             pathex=['c:\\Users\\Salaah\\Documents\\Portfolio\\Image Optimisation\\image-optimisation'],
+a = Analysis(['/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation/code/gui.py'],
+             pathex=['/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation'],
              binaries=[],
-             datas=[('C:/Users/Salaah/Documents/Portfolio/Image Optimisation/image-optimisation/code/optimise_img.py', '.'), ('C:/Users/Salaah/Documents/Portfolio/Image Optimisation/image-optimisation/code/logo.ico', '.'), ('C:/Users/Salaah/Documents/Portfolio/Image Optimisation/image-optimisation/code/img_extensions.py', '.'), ('C:/Users/Salaah/Documents/Portfolio/Image Optimisation/image-optimisation/code/gui_controls.py', '.')],
+             datas=[('/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation/code/gui_controls.py', '.'), ('/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation/code/img_extensions.py', '.'), ('/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation/code/logo.ico', '.'), ('/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation/code/optimise_img.py', '.')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -29,4 +29,8 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           runtime_tmpdir=None,
-          console=False , version='C:\\Users\\Salaah\\Documents\\Portfolio\\Image', icon='C:\\Users\\Salaah\\Documents\\Portfolio\\Image Optimisation\\image-optimisation\\code\\logo.ico')
+          console=False , icon='/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation/code/logo.ico')
+app = BUNDLE(exe,
+             name='MiniPics.app',
+             icon='/Users/eyasminbasher/Documents/Salaah/Image Optimisation/image-optimisation/code/logo.ico',
+             bundle_identifier=None)
