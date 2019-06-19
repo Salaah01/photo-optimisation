@@ -48,7 +48,6 @@ class Application(tk.Frame):
             pass
         self.window.title('MiniPics')
         self.invalid_files = []
-        
 
     #  GUI CONTROLS
 
@@ -299,6 +298,7 @@ class Application(tk.Frame):
                     pass
         else:
             self.info_label.config(text="Please add files", fg='red')
+    
     # FRAME LAYOUTS
 
     def frame_layouts(self):
